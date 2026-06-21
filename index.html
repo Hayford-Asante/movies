@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <title>Movie Shop</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #050608;
+            --surface: #111417;
+            --surface-strong: #181c21;
+            --text: #f7f8fb;
+            --muted: #9ca3af;
+            --accent: #ff385c;
+            --accent-soft: rgba(255, 56, 92, 0.16);
+            --border: rgba(255,255,255,.08);
+            font-family: Inter, system-ui, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at top, rgba(255,255,255,.04), transparent 40%),
+                        radial-gradient(circle at bottom right, rgba(255,56,92,.14), transparent 22%),
+                        var(--bg);
+            color: var(--text);
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,.04), transparent 45%);
+            pointer-events: none;
+        }
+
+        .page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 28px 20px 40px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 14px;
+        }
+
+        .tab {
+            padding: 14px 18px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            background: rgba(255,255,255,.06);
+            border: 1px solid transparent;
+            transition: background .2s ease, border-color .2s ease;
+        }
+
+        .tab.active {
+            background: var(--surface-strong);
+            border-color: rgba(255,255,255,.14);
+        }
+
+        .tabs .badge {
+            background: var(--accent);
+            color: white;
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 0.78rem;
+            margin-left: 4px;
+        }
+
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin: 24px 0 14px;
+            gap: 12px;
+        }
+
+        .section-title.centered {
+            justify-content: center;
+            text-align: center;
+        }
+
+        .section-title.centered h2 {
+            margin: 0;
+            font-size: 1.1rem;
+            letter-spacing: -.01em;
+        }
+
+        .section-title h2 {
+            margin: 0;
+            font-size: 1.1rem;
+            letter-spacing: -.01em;
+        }
+
+        .section-title a {
+            color: var(--muted);
+            font-size: 0.88rem;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Featured movies carousel */
+        .featured-carousel {
+            display: flex;
+            gap: 24px;
+            overflow: hidden;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .featured-carousel-inner {
+            display: flex;
+            transition: transform 600ms cubic-bezier(.22,.9,.3,1);
+            width: 100%;
+        }
+
+        .featured-carousel-item {
+            flex: 0 0 100%;
+            display: flex;
+            justify-content: center;
+            padding: 0 12px;
+        }
+
+        .featured-card {
+            background: var(--surface-strong);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            width: min(100%, 960px);
+            display: flex;
+            flex-direction: column;
+            margin: 0 auto;
+        }
+
+        .featured-card img {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+            display: block;
+        }
+
+        .featured-card-content {
+            padding: 20px 18px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .featured-card-content h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            letter-spacing: -.01em;
+            font-weight: 600;
+        }
+
+        .featured-card-content p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+
+        .featured-card-content a {
+            color: var(--accent);
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.95rem;
+            align-self: flex-start;
+        }
+
+        .featured-card-content a:hover {
+            text-decoration: underline;
+        }
+
+        .featured-nav {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            justify-content: center;
+            margin-top: 16px;
+        }
+
+        .featured-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.2);
+            cursor: pointer;
+            transition: background .3s ease;
+        }
+
+        .dot.active {
+            background: var(--accent);
+        }
+
+        .featured-arrow {
+            display: none;
+        }
+
+        .movie-row {
+            display: flex;
+            gap: 18px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+            scroll-snap-type: x mandatory;
+        }
+
+        .movie-row::-webkit-scrollbar {
+            display: none;
+        }
+
+        .movie-row article {
+            flex: 0 0 260px;
+            scroll-snap-align: start;
+        }
+
+        .hero-card,
+        .movie-card {
+            background: var(--surface-strong);
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            overflow: hidden;
+            min-height: 280px;
+            position: relative;
+            scroll-snap-align: start;
+        }
+
+        .hero-card {
+            min-height: 320px;
+        }
+
+        .hero-card::before,
+        .movie-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.48));
+            pointer-events: none;
+        }
+
+        .hero-image,
+        .movie-image {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            display: block;
+        }
+
+        .hero-meta,
+        .movie-meta {
+            position: absolute;
+            left: 18px;
+            right: 18px;
+            bottom: 18px;
+            z-index: 1;
+            display: grid;
+            gap: 8px;
+        }
+
+        .hero-meta span,
+        .movie-meta span {
+            font-size: 0.88rem;
+            color: var(--muted);
+        }
+
+        .hero-meta h3,
+        .movie-meta h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            letter-spacing: -.02em;
+        }
+
+        .sale-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.08);
+            color: #fff;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .sale-badge::before {
+            content: "SALE";
+            display: inline-block;
+            color: #ffdee4;
+        }
+
+        .movie-card {
+            min-height: 330px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .movie-card img {
+            border-bottom: 1px solid rgba(255,255,255,.06);
+        }
+
+        .movie-info {
+            padding: 14px 14px 16px;
+            display: grid;
+            gap: 6px;
+        }
+
+        .movie-info h3 {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .movie-info p {
+            margin: 0;
+            font-size: 0.86rem;
+            color: var(--muted);
+        }
+
+        .movie-info .price {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .movie-info .price strong {
+            color: #fff;
+            font-size: 0.96rem;
+        }
+
+        @media (max-width: 700px) {
+            .page {
+                padding: 18px 16px 32px;
+            }
+            .hero-card,
+            .movie-card {
+                border-radius: 18px;
+            }
+            .hero-meta,
+            .movie-meta {
+                left: 14px;
+                right: 14px;
+                bottom: 14px;
+            }
+            .section-title {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        /* Collections and genres styling for the new page */
+        .collections-row,
+        .animated-row,
+        .genres-row {
+            display: flex;
+            gap: 14px;
+            overflow-x: auto;
+            padding: 8px 16px 18px;
+            -webkit-overflow-scrolling: touch;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: nowrap;
+        }
+
+        .collections-row::-webkit-scrollbar,
+        .animated-row::-webkit-scrollbar,
+        .genres-row::-webkit-scrollbar {
+            display: none;
+        }
+
+        .collection-card,
+        .animated-card {
+            flex: 0 0 44vw;
+            max-width: 200px;
+            height: 200px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+            box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .collection-card img,
+        .animated-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .genre-card {
+            flex: 0 0 60vw;
+            max-width: 260px;
+            height: 140px;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.05rem;
+            text-transform: uppercase;
+        }
+
+        .genre-card.musical { background: linear-gradient(135deg,#4f46e5,#06b6d4); }
+        .genre-card.mystery { background: linear-gradient(135deg,#7c3aed,#0ea5a4); }
+        .genre-card.drama { background: linear-gradient(135deg,#8b5cf6,#ef4444); }
+
+        .footer {
+            margin-top: 40px;
+            padding: 36px 24px;
+            background: rgba(255,255,255,.04);
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .footer-brand {
+            display: grid;
+            gap: 12px;
+            min-width: 220px;
+        }
+
+        .footer-brand h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .footer-brand p {
+            margin: 0;
+            color: var(--muted);
+            max-width: 280px;
+            line-height: 1.6;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 36px;
+            flex-wrap: wrap;
+        }
+
+        .footer-column {
+            min-width: 120px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .footer-column h4 {
+            margin: 0;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+
+        .footer-column a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.92rem;
+        }
+
+        .footer-column a:hover {
+            color: var(--accent);
+        }
+
+        @media (min-width: 900px) {
+            .collection-card,
+            .animated-card {
+                flex: 0 0 18%;
+                max-width: 220px;
+            }
+
+            .genre-card { flex: 0 0 22%; }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <header>
+            <div class="tabs">
+                <button class="tab active">For You</button>
+                <button class="tab">Deals</button>
+                <button class="tab">My Sets</button>
+            </div>
+            <div class="profile">
+                <span class="badge">Live</span>
+            </div>
+        </header>
+
+        <section>
+            <div class="section-title">
+                <h2>Featured movies</h2>
+                <a href="#">See all</a>
+            </div>
+            <div class="featured-carousel">
+                <div class="featured-carousel-inner" id="featuredInner">
+                    <div class="featured-carousel-item">
+                        <article class="featured-card">
+                            <img src="16.jpg" alt="Sniper Nation" />
+                            <div class="featured-card-content">
+                                <h3>NEW TO MOVIES ANYWHERE</h3>
+                                <p>Add New Movies To Your Collection</p>
+                                <a href="#">Learn More ></a>
+                            </div>
+                        </article>
+                    </div>
+                    <div class="featured-carousel-item">
+                        <article class="featured-card">
+                            <img src="21.jpg" alt="Youngblood" />
+                            <div class="featured-card-content">
+                                <h3>YOUR MOVIES YOUR WAY</h3>
+                                <p>Personalize, Organize & More</p>
+                                <a href="#">Learn More ></a>
+                            </div>
+                        </article>
+                    </div>
+                    <div class="featured-carousel-item">
+                        <article class="featured-card">
+                            <img src="9.jpg" alt="Cinema Picks" />
+                            <div class="featured-card-content">
+                                <h3>SYNC YOUR COLLECTION</h3>
+                                <p>Connect Your Digital Retailer</p>
+                                <a href="#">Learn More ></a>
+                            </div>
+                        </article>
+                    </div>
+                    <div class="featured-carousel-item">
+                        <article class="featured-card">
+                            <img src="15.jpg" alt="Action Heroes" />
+                            <div class="featured-card-content">
+                                <h3>YOUR MOVIES IN ONE PLACE</h3>
+                                <p>Welcome To Movies Anywhere</p>
+                                <a href="#">Learn More ></a>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </div>
+            <div class="featured-nav">
+                <div class="featured-dots" id="featuredDots"></div>
+            </div>
+        </section>
+
+        <section>
+            <div class="section-title">
+                <h2>Deals</h2>
+                <a href="#">See all</a>
+            </div>
+            <div class="movie-row">
+                <article class="movie-card">
+                    <img class="movie-image" src="18.webp" alt="Austin Powers Goldmember" />
+                    <div class="movie-info">
+                        <h3>Austin Powers: Goldmember</h3>
+                        <p>Spy comedy classic</p>
+                        <div class="movie-info price">
+                            <span class="sale-badge">from $5.00</span>
+                            <strong>HD</strong>
+                        </div>
+                    </div>
+                </article>
+                <article class="movie-card">
+                    <img class="movie-image" src="12.webp" alt="The Help" />
+                    <div class="movie-info">
+                        <h3>The Help</h3>
+                        <p>Drama with heart</p>
+                        <div class="movie-info price">
+                            <span class="sale-badge">from $4.99</span>
+                            <strong>HD</strong>
+                        </div>
+                    </div>
+                </article>
+                <article class="movie-card">
+                    <img class="movie-image" src="2.webp" alt="Big Fish" />
+                    <div class="movie-info">
+                        <h3>Big Fish</h3>
+                        <p>Whimsical fantasy drama</p>
+                        <div class="movie-info price">
+                            <span class="sale-badge">from $4.99</span>
+                            <strong>HD</strong>
+                        </div>
+                    </div>
+                </article>
+                <article class="movie-card">
+                    <img class="movie-image" src="4.webp" alt="Family poster" />
+                    <div class="movie-info">
+                        <h3>Romantic Comedy</h3>
+                        <p>Perfect weekend watch</p>
+                        <div class="movie-info price">
+                            <span class="sale-badge">from $4.99</span>
+                            <strong>HD</strong>
+                        </div>
+                    </div>
+                </article>
+
+                   </article>
+                <article class="movie-card">
+                    <img class="movie-image" src="19.webp" alt="Big Fish" />
+                    <div class="movie-info">
+                        <h3>Big Fish</h3>
+                        <p>Whimsical fantasy drama</p>
+                        <div class="movie-info price">
+                            <span class="sale-badge">from $4.99</span>
+                            <strong>HD</strong>
+                        </div>
+                    </div>
+                </article>
+                <article class="movie-card">
+                    <img class="movie-image" src="14.webp" alt="Family poster" />
+                    <div class="movie-info">
+                        <h3>Romantic Comedy</h3>
+                        <p>Perfect weekend watch</p>
+                        <div class="movie-info price">
+                            <span class="sale-badge">from $4.99</span>
+                            <strong>HD</strong>
+                        </div>
+                    </div>
+                </article>
+
+                   </article>
+                <article class="movie-card">
+                    <img class="movie-image" src="24.webp" alt="Big Fish" />
+                    <div class="movie-info">
+                        <h3>Big Fish</h3>
+                        <p>Whimsical fantasy drama</p>
+                        <div class="movie-info price">
+                            <span class="sale-badge">from $4.99</span>
+                            <strong>HD</strong>
+                        </div>
+                    </div>
+                </article>
+                <article class="movie-card">
+                    <img class="movie-image" src="23.webp" alt="Family poster" />
+                    <div class="movie-info">
+                        <h3>Romantic Comedy</h3>
+                        <p>Perfect weekend watch</p>
+                        <div class="movie-info price">
+                            <span class="sale-badge">from $4.99</span>
+                            <strong>HD</strong>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+      <section aria-label="Newest products">
+  <div class="container py-4">  
+ <h2>Celebrating LGBTQ+ Stories</h2>
+
+    <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
+      <div class="carousel-inner">
+
+        <div class="carousel-item active">
+          <div class="d-flex justify-content-center" style="background: #111417; padding: 24px 20px; border-radius: 16px; gap: 16px;">
+            <div class="image"><img src="1.webp" alt="" class="img-fluid rounded" style="width:220px;height:220px;object-fit:cover;border-radius:12px;"></div>
+            <div class="image"><img src="2.webp" alt="" class="img-fluid rounded" style="width:220px;height:220px;object-fit:cover;border-radius:12px;"></div>
+           <div class="image"><img src="4.webp" alt="" class="img-fluid rounded" style="width:220px;height:220px;object-fit:cover;border-radius:12px;"></div>
+          </div>
+        </div>
+
+        <div class="carousel-item">
+          <div class="d-flex justify-content-center" style="background: #111417; padding: 24px 20px; border-radius: 16px; gap: 16px;">
+            <div class="image"><img src="5.webp" alt="" class="img-fluid rounded" style="width:220px;height:220px;object-fit:cover;border-radius:12px;"></div>
+            <div class="image"><img src="6.webp" alt="" class="img-fluid rounded" style="width:220px;height:220px;object-fit:cover;border-radius:12px;"></div>
+            <div class="image"><img src="8.webp" alt="" class="img-fluid rounded" style="width:220px;height:220px;object-fit:cover;border-radius:12px;"></div>
+          </div>
+        </div>
+
+        <div class="carousel-item">
+          <div class="d-flex justify-content-center" style="background: #111417; padding: 24px 20px; border-radius: 16px; gap: 16px;">
+            <div class="image"><img src="58.webp" alt="" class="img-fluid rounded" style="width:220px;height:220px;object-fit:cover;border-radius:12px;"></div>
+            <div class="image"><img src="59.webp" alt="" class="img-fluid rounded" style="width:220px;height:220px;object-fit:cover;border-radius:12px;"></div>
+             <div class="image"><img src="61.webp" alt="" class="img-fluid rounded" style="width:220px;height:220px;object-fit:cover;border-radius:12px;"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+      </button>
+
+      <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+   
+
+        <section>
+            <div class="section-title">
+                <h2>Trending</h2>
+                <a href="#">See all</a>
+            </div>
+            <div class="movie-row">
+                <article class="movie-card">
+                    <img class="movie-image" src="45.webp" alt="Every Body" />
+                   
+                </article>
+
+                 <article class="movie-card">
+                    <img class="movie-image" src="41.webp" alt="Every Body" />
+              
+                </article>
+
+                <article class="movie-card">
+                    <img class="movie-image" src="40.webp" alt="Of an Age" />
+                   
+                </article>
+                <article class="movie-card">
+                    <img class="movie-image" src="42.webp" alt="Spoiler Alert" />
+                  
+                </article>
+
+                  <article class="movie-card">
+                    <img class="movie-image" src="38.webp" alt="Every Body" />
+                   
+                </article>
+
+                 <article class="movie-card">
+                    <img class="movie-image" src="37.webp" alt="Every Body" />
+              
+                </article>
+
+                <article class="movie-card">
+                    <img class="movie-image" src="17.webp" alt="Of an Age" />
+                   
+                </article>
+                <article class="movie-card">
+                    <img class="movie-image" src="58.webp" alt="Spoiler Alert" />
+                  
+                </article>
+            </div>
+        </section>
+
+
+
+    </main>
+
+    <!-- Continued page sections: Popular Collections, Animated, Genres -->
+    <section>
+        <div class="section-title centered">
+            <h2>Popular Movie Collections</h2>
+        </div>
+        <div class="collections-row" aria-label="Popular Movie Collections">
+            <div class="collection-card"><img src="50.webp" alt="collection"></div>
+            <div class="collection-card"><img src="51.webp" alt="collection"></div>
+            <div class="collection-card"><img src="52.webp" alt="collection"></div>
+            <div class="collection-card"><img src="53.webp" alt="collection"></div>
+        </div>
+    </section>
+
+    <section>
+        <div class="section-title centered">
+            <h2>Popular Animated Collections</h2>
+        </div>
+        <div class="animated-row" aria-label="Popular Animated Collections">
+            <div class="animated-card"><img src="60.webp" alt="animated"></div>
+            <div class="animated-card"><img src="59.webp" alt="animated"></div>
+            <div class="animated-card"><img src="63.webp" alt="animated"></div>
+            <div class="animated-card"><img src="28.webp" alt="animated"></div>
+        </div>
+    </section>
+
+    <section>
+        <div class="section-title centered">
+            <h2>Genres</h2>
+        </div>
+        <div class="genres-row" aria-label="Genres">
+            <div class="genre-card musical">Musical</div>
+            <div class="genre-card mystery">Mystery</div>
+            <div class="genre-card drama">Drama</div>
+            <div class="genre-card musical">Adventure</div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-brand">
+            <h3>MoviesAnywhere</h3>
+            <p>Browse curated collections, discover trending titles, and keep streaming all your favorites in one place.</p>
+        </div>
+        <div class="footer-links">
+            <div class="footer-column">
+                <h4>Explore</h4>
+                <a href="#">Featured</a>
+                <a href="#">Deals</a>
+                <a href="#">Collections</a>
+            </div>
+            <div class="footer-column">
+                <h4>Support</h4>
+                <a href="#">Help Center</a>
+                <a href="#">Contact Us</a>
+                <a href="#">Privacy</a>
+            </div>
+            <div class="footer-column">
+                <h4>Legal</h4>
+                <a href="#">Terms</a>
+                <a href="#">Cookies</a>
+                <a href="#">Accessibility</a>
+            </div>
+        </div>
+    </footer>
+
+        <script>
+        // Auto-cycle Rooms carousels: translate the .carousel-inner horizontally between items
+        (function(){
+            const carousels = document.querySelectorAll('.rooms-carousel');
+            carousels.forEach(function(carousel){
+                const inner = carousel.querySelector('.carousel-inner');
+                const items = Array.from(inner.querySelectorAll('.carousel-item'));
+                if (!items.length) return;
+
+                // placeholder SVG (light gray) encoded when needed
+                const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='600' height='600'><rect width='100%' height='100%' fill='%23efe9e4'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='%23c1b8b1' font-size='28'>No image</text></svg>";
+                const placeholder = 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+
+                // replace empty or failing images with placeholder
+                inner.querySelectorAll('img').forEach(function(img){
+                    const src = img.getAttribute('src');
+                    if (!src || !src.trim()) img.src = placeholder;
+                    img.addEventListener('error', function(){
+                        if (img.src !== placeholder) img.src = placeholder;
+                    });
+                    // ensure images have alt text
+                    if (!img.getAttribute('alt')) img.setAttribute('alt', 'Room image');
+                });
+
+                let idx = 0;
+                // set initial transform
+                inner.style.transform = 'translateX(0)';
+
+                const advance = function(){
+                    idx = (idx + 1) % items.length;
+                    inner.style.transform = `translateX(-${idx * 100}%)`;
+                };
+
+                let timer = setInterval(advance, 3000);
+
+                // pause on hover for better UX
+                carousel.addEventListener('mouseenter', function(){ clearInterval(timer); });
+                carousel.addEventListener('mouseleave', function(){ timer = setInterval(advance, 3000); });
+            });
+        })();
+
+        // Featured carousel with dots and automatic cycling
+        (function(){
+            const inner = document.getElementById('featuredInner');
+            const dotsContainer = document.getElementById('featuredDots');
+
+            if (!inner || !dotsContainer) return;
+
+            const items = Array.from(inner.querySelectorAll('.featured-carousel-item'));
+            let idx = 0;
+
+            items.forEach(function(_, i){
+                const dot = document.createElement('button');
+                dot.className = 'dot' + (i === 0 ? ' active' : '');
+                dot.addEventListener('click', function(){ showSlide(i); });
+                dotsContainer.appendChild(dot);
+            });
+
+            const dots = Array.from(dotsContainer.querySelectorAll('.dot'));
+
+            function showSlide(n){
+                idx = ((n % items.length) + items.length) % items.length;
+                inner.style.transform = `translateX(-${idx * 100}%)`;
+                dots.forEach(function(d, i){ d.classList.toggle('active', i === idx); });
+            }
+
+            function nextSlide(){
+                showSlide(idx + 1);
+            }
+
+            let timer = setInterval(nextSlide, 4000);
+            const carousel = inner.parentElement;
+
+            carousel.addEventListener('mouseenter', function(){ clearInterval(timer); });
+            carousel.addEventListener('mouseleave', function(){ timer = setInterval(nextSlide, 4000); });
+        })();
+        </script>
+
+     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
+
+</body>
+</html>
