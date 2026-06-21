@@ -340,6 +340,41 @@
             color: var(--muted);
         }
 
+        .pagination {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 18px;
+            padding-bottom: 10px;
+        }
+
+        .pagination button {
+            border: none;
+            background: rgba(255,255,255,.08);
+            color: var(--text);
+            padding: 10px 14px;
+            border-radius: 999px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .2s ease, transform .2s ease;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: rgba(255,255,255,.16);
+            transform: translateY(-1px);
+        }
+
+        .pagination button.active {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .pagination button:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+
         .movie-info .price {
             display: flex;
             align-items: center;
@@ -576,7 +611,7 @@
                 <h2>Deals</h2>
                 <a href="#">See all</a>
             </div>
-            <div class="movie-row">
+            <div class="movie-row" id="dealsRow">
                 <article class="movie-card">
                     <img class="movie-image" src="18.webp" alt="Austin Powers Goldmember" />
                     <div class="movie-info">
@@ -621,8 +656,6 @@
                         </div>
                     </div>
                 </article>
-
-                   </article>
                 <article class="movie-card">
                     <img class="movie-image" src="19.webp" alt="Big Fish" />
                     <div class="movie-info">
@@ -645,8 +678,6 @@
                         </div>
                     </div>
                 </article>
-
-                   </article>
                 <article class="movie-card">
                     <img class="movie-image" src="24.webp" alt="Big Fish" />
                     <div class="movie-info">
@@ -670,6 +701,7 @@
                     </div>
                 </article>
             </div>
+            <div class="pagination" id="dealsPagination" aria-label="Deals pagination"></div>
         </section>
 
       <section aria-label="Newest products">
@@ -909,6 +941,55 @@
 
             carousel.addEventListener('mouseenter', function(){ clearInterval(timer); });
             carousel.addEventListener('mouseleave', function(){ timer = setInterval(nextSlide, 4000); });
+        })();
+
+        (function(){
+            const dealsRow = document.getElementById('dealsRow');
+            const pagination = document.getElementById('dealsPagination');
+            if (!dealsRow || !pagination) return;
+
+            const cards = Array.from(dealsRow.querySelectorAll('.movie-card'));
+            const perPage = 4;
+            const totalPages = Math.max(1, Math.ceil(cards.length / perPage));
+            let currentPage = 1;
+
+            function renderPage(page) {
+                currentPage = Math.min(Math.max(page, 1), totalPages);
+                cards.forEach(function(card, index) {
+                    const pageIndex = Math.floor(index / perPage) + 1;
+                    card.style.display = pageIndex === currentPage ? '' : 'none';
+                });
+
+                pagination.innerHTML = '';
+
+                const prevBtn = document.createElement('button');
+                prevBtn.type = 'button';
+                prevBtn.textContent = 'Previous';
+                prevBtn.disabled = currentPage === 1;
+                prevBtn.addEventListener('click', function() { renderPage(currentPage - 1); });
+                pagination.appendChild(prevBtn);
+
+                for (let pageIndex = 1; pageIndex <= totalPages; pageIndex++) {
+                    const pageBtn = document.createElement('button');
+                    pageBtn.type = 'button';
+                    pageBtn.textContent = pageIndex;
+                    pageBtn.className = pageIndex === currentPage ? 'active' : '';
+                    if (pageIndex === currentPage) {
+                        pageBtn.setAttribute('aria-current', 'page');
+                    }
+                    pageBtn.addEventListener('click', function() { renderPage(pageIndex); });
+                    pagination.appendChild(pageBtn);
+                }
+
+                const nextBtn = document.createElement('button');
+                nextBtn.type = 'button';
+                nextBtn.textContent = 'Next';
+                nextBtn.disabled = currentPage === totalPages;
+                nextBtn.addEventListener('click', function() { renderPage(currentPage + 1); });
+                pagination.appendChild(nextBtn);
+            }
+
+            renderPage(1);
         })();
         </script>
 
